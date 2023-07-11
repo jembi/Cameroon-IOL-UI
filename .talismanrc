@@ -1,0 +1,20 @@
+fileignoreconfig:
+- filename: .env.example
+  checksum: e27c677118df59fbea31a0c0eefe30fe095bf0bff2ac3bf1edabbd4459d885b4
+- filename: apps/iolApi/functions/DispatcherConfigImpl.py
+  checksum: 385f12cde21ec9b035a1e091c1fc32922574d489869b7a2ff996a947ce066af9
+- filename: apps/iolApi/functions/NotificationConfigImpl.py
+  checksum: 9f2a76bcfe4d8781627605e89e5c59321b7a52e25ad3c09fcea7b8cc8a7ddff9
+- filename: apps/iolApi/migrations/0001_initial.py
+  checksum: d475f21d000aa5cfdbc9b79740d933f3c0ff714d5942e8e06b343a34f2de2136
+- filename: apps/iolApi/models.py
+  checksum: f22db6c8e3ab206fd103b0db7a2fe63f4dd0b61d8943824687dfc6d05558b2af
+- filename: configs/Makefile.sample
+  checksum: d69ce663495be1396a909bec765b649691b7f2be23b1994e3e63f1d8565bbc5b
+- filename: iol_admin/settings/common.py
+  checksum: 21cdee8c459563adee7f35be87f877dbc4f7610d697009a3e9c34fce6c1d8dc8
+- filename: iol_admin/settings/development.py
+  checksum: 6ea858d21e63dd5aba8a0fbbb49bbf661709267f05b57989d8f98a938f46f3a6
+- filename: iol_admin/settings/production.py
+  checksum: 42629340883defbee7973040f410c8538ee63237c3a9aaa24ea6a7a0e9ef2b22
+version: "1.0"

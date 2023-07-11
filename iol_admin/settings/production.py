@@ -8,7 +8,12 @@ DEBUG = False
 ALLOWED_HOSTS = []
 
 # ##### SECURITY CONFIGURATION ############################
-
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': join(PROJECT_ROOT, 'run', 'prod.sqlite3'),
+    }
+}
 # TODO: Make sure, that sensitive information uses https
 # TODO: Evaluate the following settings, before uncommenting them
 # redirects all requests to https

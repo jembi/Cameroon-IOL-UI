@@ -1,6 +1,8 @@
 fileignoreconfig:
 - filename: .env.example
   checksum: e27c677118df59fbea31a0c0eefe30fe095bf0bff2ac3bf1edabbd4459d885b4
+- filename: apps/iolApi/admin.py
+  checksum: 4d4707248415dc307ef5b8aa4279f257234ba9b48fb5618e18598082ee41b1d3
 - filename: apps/iolApi/functions/DispatcherConfigImpl.py
   checksum: 385f12cde21ec9b035a1e091c1fc32922574d489869b7a2ff996a947ce066af9
 - filename: apps/iolApi/functions/NotificationConfigImpl.py

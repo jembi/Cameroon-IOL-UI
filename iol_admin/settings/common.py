@@ -1,7 +1,11 @@
 # Python imports
 from os.path import abspath, basename, dirname, join, normpath
 import sys
-
+import environ
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
 
 # ##### PATH CONFIGURATION ################################
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
@@ -41,13 +45,15 @@ sys.path.append(normpath(join(PROJECT_ROOT, 'apps')))
 DEFAULT_APPS = [
     # 'jet.dashboard',
     # 'jet',
+    'apps.iolApi',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.iolApi',
+
+
 ]
 
 # Middlewares
@@ -132,6 +138,7 @@ except IOError:
         raise Exception('Could not open %s for writing!' % SECRET_FILE)
 
 
+env.read_env(env.str('ENV_PATH', join(PROJECT_ROOT, '.env')))
 
 # # ##### JET THEME CONFIGURATION ######################
 # JET_SIDE_MENU_COMPACT = True

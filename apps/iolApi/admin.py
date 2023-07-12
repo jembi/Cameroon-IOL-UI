@@ -6,9 +6,9 @@ from .functions.MetadataUploadImpl import MetadataUploadAdminImpl
 from .functions.NotificationConfigImpl import NotificationConfigImpl
 from .models import JsonMapper, DispatcherConfig, NotificationConfig, MetadataUpload, IOLHost
 import requests
-import json
+from django.core.files.base import ContentFile, File
 from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_init
+from django.db.models.signals import post_save, pre_init, pre_save
 from django.shortcuts import get_object_or_404
 
 import environ
@@ -93,6 +93,14 @@ class MetadataUploadAdmin(admin.ModelAdmin):
     fields = ('metadata_config_file',)
 
 
+    def has_add_permission(self, request):
+        MetadataUploadInit()
+        count = MetadataUpload.objects.all().count()
+        if count == 0:
+            return True
+        return False
+
+
 admin.site.register(NotificationConfig, NotificationConfigAdmin)
 admin.site.register(DispatcherConfig, DispatcherConfigAdmin)
 admin.site.register(MetadataUpload, MetadataUploadAdmin)
@@ -169,6 +177,17 @@ def NotificationConfigInit():
         notificationConfig_obj = NotificationConfig.objects.create(app_id=app_id, admin_email=emails, host=host, port=port, username=username, password=password)
         notificationConfig_obj.save()
 
+
+def MetadataUploadInit():
+    jsonData = MetadataUploadAdminImpl().getAndRefreshMetadataUpload()
+    metadataUpload = MetadataUpload.objects.filter()
+    print(metadataUpload)
+    if jsonData and metadataUpload is not None and metadataUpload:
+        MetadataUpload.objects.filter().delete()
+        MetadataUpload().metadata_config_file.save('meta_data.json', ContentFile(jsonData))
+    elif jsonData and metadataUpload is not None and not metadataUpload:
+        MetadataUpload.objects.filter().delete()
+        MetadataUpload().metadata_config_file.save('meta_data.json', ContentFile(jsonData))
 
 def get_admin_emails(jsonData):
     admin_emails = jsonData.get("admin_emails")

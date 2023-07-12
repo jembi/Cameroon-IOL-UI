@@ -2,12 +2,11 @@ import json
 import environ
 import requests
 
-
 env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False)
 )
-from apps.iolApi.functions.iol_server_interface import getUrl, postIolServerData
+from apps.iolApi.functions.iol_server_interface import postIolServerData, getUrl
 
 
 class JsonMapperImpl:

@@ -1,10 +1,12 @@
 import json
 import environ
+import requests
+
 env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False)
 )
-from apps.iolApi.functions.iol_server_interface import getUrl, postIolServerData
+from apps.iolApi.functions.iol_server_interface import postIolServerData, getUrl
 
 
 class NotificationConfigImpl:
@@ -24,11 +26,18 @@ class NotificationConfigImpl:
                 "password": instance.password
             }
         })
-
-        print(payload)
         response = postIolServerData(requests, payload, url)
-        print(response.status_code)
         if response.status_code == 200:
             return response
+        else:
+            return ""
+    def getAndRefreshNotificationConfig(self):
+        endpoint = env('GET_NOTIFICATION_CONFIG')
+        url = getUrl(endpoint)
+        payload = {}
+        headers = {}
+        response = requests.request("GET", url, headers=headers, data=payload)
+        if response.status_code == 200:
+            return response.json()
         else:
             return ""

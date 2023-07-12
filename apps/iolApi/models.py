@@ -1,6 +1,5 @@
 from django.db import models
 import uuid
-from django.db.models.signals import post_init
 
 
 
@@ -23,6 +22,7 @@ class IOLHost(models.Model):
     class Meta:
         db_table = "iol_host"
         verbose_name = "IOL Server Host"
+
 
 
 

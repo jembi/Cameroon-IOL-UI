@@ -5,13 +5,14 @@ from .development import *
 DEBUG = False
 
 # You will have to determine, which hostnames should be served by Django
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+env.read_env(env.str('ENV_PATH', join(PROJECT_ROOT, '.env')))
 
 # ##### SECURITY CONFIGURATION ############################
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': join(PROJECT_ROOT, 'run', 'prod.sqlite3'),
+        'NAME': join(PROJECT_ROOT, 'run', 'dev.sqlite3'),
     }
 }
 # TODO: Make sure, that sensitive information uses https
@@ -36,3 +37,4 @@ DATABASES = {
 
 # how many days a password reset should work. I'd say even one day is too long
 # PASSWORD_RESET_TIMEOUT_DAYS = 1
+INSTALLED_APPS = DEFAULT_APPS

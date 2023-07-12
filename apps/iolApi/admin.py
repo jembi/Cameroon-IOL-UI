@@ -9,6 +9,7 @@ import requests
 import json
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_init
+from django.shortcuts import get_object_or_404
 
 import environ
 
@@ -27,6 +28,7 @@ class IOLHostAdmin(admin.ModelAdmin):
     list_display = ('host', 'port', 'date_created', 'date_changed',)
     search_fields = ('host',)
     list_per_page = 15
+
     def has_add_permission(self, request):
         count = JsonMapper.objects.all().count()
         if count == 0:
@@ -43,6 +45,7 @@ class JsonMapperAdmin(admin.ModelAdmin):
     fields = ('config_url',)
 
     def has_add_permission(self, request):
+        JsonMapperInit()
         count = JsonMapper.objects.all().count()
         if count == 0:
             return True
@@ -63,6 +66,7 @@ class NotificationConfigAdmin(admin.ModelAdmin):
     list_per_page = 15
 
     def has_add_permission(self, request):
+        NotificationConfigInit()
         count = NotificationConfig.objects.all().count()
         if count == 0:
             return True
@@ -75,6 +79,10 @@ class DispatcherConfigAdmin(admin.ModelAdmin):
     list_per_page = 15
 
     def has_add_permission(self, request):
+        DispatcherConfigInit()
+        count = DispatcherConfig.objects.all().count()
+        if count == 0:
+            return True
         return False
 
 
@@ -114,8 +122,63 @@ def dispatcherConfigPostRequest(sender, **kwargs):
     response = MetadataUploadAdminImpl().postMetadataUpload(requests, instance)
 
 
-@receiver(pre_init, sender=JsonMapper)
-def JsonMapperInit(sender, **kwargs):
+
+def JsonMapperInit():
     jsonData = JsonMapperImpl().getAndRefresh()
-    if jsonData.get("metadata_config_url"):
-        JsonMapper.objects.filter().update(config_url=jsonData.get("metadata_config_url"))
+    jsonMapper = JsonMapper.objects.filter()
+    metadata_config_url = jsonData.get("metadata_config_url")
+
+    if metadata_config_url and jsonMapper:
+        JsonMapper.objects.filter().update(config_url=metadata_config_url)
+    elif metadata_config_url and not jsonMapper:
+        jsonMapper_obj = JsonMapper.objects.create(config_url=metadata_config_url)
+        jsonMapper_obj.save()
+
+
+
+def DispatcherConfigInit():
+    jsonData = DispatcherConfigImpl().getAndRefreshDispatcherConfig()
+    dispatcherConfig = DispatcherConfig.objects.filter()
+    app_id = jsonData.get("AppID")
+    dhis2_host = jsonData.get("DHIS2_IP")
+    dhis2_port = jsonData.get("DHIS2_port")
+    dhis2_username = jsonData.get("DHIS2_Username")
+    dhis2_password = jsonData.get("DHIS2_Password")
+
+
+    if app_id and dispatcherConfig:
+        DispatcherConfig.objects.filter().update(app_id=app_id, dhis2_host=dhis2_host, dhis2_port=dhis2_port, dhis2_username=dhis2_username, dhis2_password=dhis2_password)
+    elif app_id and not dispatcherConfig:
+        jsonMapper_obj = DispatcherConfig.objects.create(app_id=app_id, dhis2_host=dhis2_host, dhis2_port=dhis2_port, dhis2_username=dhis2_username, dhis2_password=dhis2_password)
+        jsonMapper_obj.save()
+
+
+def NotificationConfigInit():
+    jsonData = NotificationConfigImpl().getAndRefreshNotificationConfig()
+    notificationConfig = NotificationConfig.objects.filter()
+    app_id = jsonData.get("AppID")
+    emails = get_admin_emails(jsonData)
+    host = jsonData.get("smtp_config").get("host")
+    port = jsonData.get("smtp_config").get("port")
+    username = jsonData.get("smtp_config").get("username")
+    password = jsonData.get("smtp_config").get("password")
+
+    if app_id and notificationConfig:
+        NotificationConfig.objects.filter().update(app_id=app_id, admin_email=emails,  host=host, port=port, username=username, password=password)
+    elif app_id and not notificationConfig:
+        notificationConfig_obj = NotificationConfig.objects.create(app_id=app_id, admin_email=emails, host=host, port=port, username=username, password=password)
+        notificationConfig_obj.save()
+
+
+def get_admin_emails(jsonData):
+    admin_emails = jsonData.get("admin_emails")
+    emails = ''
+    for admin_email in admin_emails:
+        if emails:
+            emails = "," + admin_email
+        else:
+            emails = admin_email
+    return emails
+
+
+

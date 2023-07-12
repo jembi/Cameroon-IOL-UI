@@ -12,9 +12,18 @@ def postIolServerData(requests, payload, url):
     response = requests.request("POST", url, headers=headers, data=payload)
     return response
 
-def getUrl( endpoint):
-    host = 'localhost'
-    port = '5001'
+def getUrl(endpoint):
+    host = env('IOL_HOST')
+    port = env('IOL_PORT')
     url = "http://" + host + ":" + port + "/" + endpoint
     print("url -"+url)
     return url
+
+
+# def getUrl(endpoint):
+#    # iOLHost = get_object_or_404(IOLHost)
+#     host = iOLHost.host
+#     port = iOLHost.port
+#     url = "http://" + host + ":" + port + "/" + endpoint
+#     print("url -"+url)
+#     return url

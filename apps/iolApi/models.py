@@ -1,13 +1,21 @@
+import os
+
 from django.db import models
 import uuid
 
+from django.core.files.base import ContentFile, File
+
+from iol_admin import settings
+from iol_admin.settings.common import MEDIA_ROOT
 
 
 # Create your models here.
 
 def _upload_metadata_config_file(instance, filename):
-    ext = filename.split('.')[-1]
-    filename = "%s.%s" % (uuid.uuid4(), ext)
+    path = os.path.isfile(os.path.join(MEDIA_ROOT, filename))
+    print(path)
+    if path:
+        os.remove(os.path.join(MEDIA_ROOT, filename))
     return instance.get_metadata_upload_path(filename)
 
 
@@ -83,4 +91,3 @@ class MetadataUpload(models.Model):
 
     def get_metadata_upload_path(self, filename):
         return filename
-

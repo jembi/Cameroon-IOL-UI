@@ -13,7 +13,8 @@ class JsonMapperImpl:
     def postJsonMapper(self, requests, instance):
         config_url = instance.config_url
         endpoint = env('MAPPER_CONFIG')
-        url = getUrl(endpoint)
+        host_name = env('CONTAINER_MAPPER_CONFIG')
+        url = getUrl(endpoint, host_name)
         payload = json.dumps({
             "metadata_config_url": config_url
         })
@@ -26,7 +27,8 @@ class JsonMapperImpl:
 
     def getAndRefresh(self):
         endpoint = env('GET_MAPPER_CONFIG')
-        url = getUrl(endpoint)
+        host_name = env('CONTAINER_MAPPER_CONFIG')
+        url = getUrl(endpoint, host_name)
         payload = {}
         headers = {}
         response = requests.request("GET", url, headers=headers, data=payload)

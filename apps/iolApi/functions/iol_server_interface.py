@@ -12,10 +12,10 @@ def postIolServerData(requests, payload, url):
     response = requests.request("POST", url, headers=headers, data=payload)
     return response
 
-def getUrl(endpoint):
-    host = env('IOL_HOST')
+def getUrl(endpoint, host):
+    header = env('HEADER')
     port = env('IOL_PORT')
-    url = "http://" + host + ":" + port + "/" + endpoint
+    url = header+"://" + host + ":" + port + "/" + endpoint
     print("url -"+url)
     return url
 

@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from .functions.DispatcherConfigImpl import DispatcherConfigImpl
 from .functions.JsonMapperImpl import JsonMapperImpl
 from .functions.MetadataUploadImpl import MetadataUploadAdminImpl
@@ -9,7 +8,7 @@ import requests
 from django.core.files.base import ContentFile, File
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_init, pre_save
-from django.shortcuts import get_object_or_404
+from django.contrib import messages
 
 import environ
 
@@ -35,6 +34,7 @@ class IOLHostAdmin(admin.ModelAdmin):
             return True
         return False
 
+
 admin.site.register(IOLHost, IOLHostAdmin)
 
 
@@ -45,16 +45,20 @@ class JsonMapperAdmin(admin.ModelAdmin):
     fields = ('config_url',)
 
     def has_add_permission(self, request):
-        JsonMapperInit()
         count = JsonMapper.objects.all().count()
         if count == 0:
             return True
         return False
 
+    def get_queryset(self, request):
+        jsonMapperInit()
+        # self.message_user(request, "The message", level=messages.ERROR)
+
+        query = super(JsonMapperAdmin, self).get_queryset(request)
+        return query
+
     class Meta:
         model = JsonMapper
-    class Media:
-        js = ("/static/s.js",)
 
 
 admin.site.register(JsonMapper, JsonMapperAdmin)
@@ -66,11 +70,15 @@ class NotificationConfigAdmin(admin.ModelAdmin):
     list_per_page = 15
 
     def has_add_permission(self, request):
-        NotificationConfigInit()
         count = NotificationConfig.objects.all().count()
         if count == 0:
             return True
         return False
+
+    def get_queryset(self, request):
+        notificationConfigInit()
+        query = super(NotificationConfigAdmin, self).get_queryset(request)
+        return query
 
 
 class DispatcherConfigAdmin(admin.ModelAdmin):
@@ -79,11 +87,15 @@ class DispatcherConfigAdmin(admin.ModelAdmin):
     list_per_page = 15
 
     def has_add_permission(self, request):
-        DispatcherConfigInit()
         count = DispatcherConfig.objects.all().count()
         if count == 0:
             return True
         return False
+
+    def get_queryset(self, request):
+        dispatcherConfigInit()
+        query = super(DispatcherConfigAdmin, self).get_queryset(request)
+        return query
 
 
 class MetadataUploadAdmin(admin.ModelAdmin):
@@ -92,13 +104,16 @@ class MetadataUploadAdmin(admin.ModelAdmin):
     list_per_page = 15
     fields = ('metadata_config_file',)
 
-
     def has_add_permission(self, request):
-        MetadataUploadInit()
         count = MetadataUpload.objects.all().count()
         if count == 0:
             return True
         return False
+
+    def get_queryset(self, request):
+        metadataUploadInit()
+        query = super(MetadataUploadAdmin, self).get_queryset(request)
+        return query
 
 
 admin.site.register(NotificationConfig, NotificationConfigAdmin)
@@ -130,8 +145,7 @@ def dispatcherConfigPostRequest(sender, **kwargs):
     response = MetadataUploadAdminImpl().postMetadataUpload(requests, instance)
 
 
-
-def JsonMapperInit():
+def jsonMapperInit():
     jsonData = JsonMapperImpl().getAndRefresh()
     jsonMapper = JsonMapper.objects.filter()
     metadata_config_url = jsonData.get("metadata_config_url")
@@ -143,25 +157,30 @@ def JsonMapperInit():
         jsonMapper_obj.save()
 
 
-
-def DispatcherConfigInit():
+def dispatcherConfigInit():
     jsonData = DispatcherConfigImpl().getAndRefreshDispatcherConfig()
-    dispatcherConfig = DispatcherConfig.objects.filter()
-    app_id = jsonData.get("AppID")
-    dhis2_host = jsonData.get("DHIS2_IP")
-    dhis2_port = jsonData.get("DHIS2_port")
-    dhis2_username = jsonData.get("DHIS2_Username")
-    dhis2_password = jsonData.get("DHIS2_Password")
+    if jsonData:
+        dispatcherConfig = DispatcherConfig.objects.filter()
+        app_id = jsonData.get("AppID")
+        dhis2_host = jsonData.get("DHIS2_IP")
+        dhis2_port = jsonData.get("DHIS2_port")
+        dhis2_username = jsonData.get("DHIS2_Username")
+        dhis2_password = jsonData.get("DHIS2_Password")
+
+        if app_id and dispatcherConfig:
+            DispatcherConfig.objects.filter().update(app_id=app_id, dhis2_host=dhis2_host, dhis2_port=dhis2_port,
+                                                     dhis2_username=dhis2_username, dhis2_password=dhis2_password)
+        elif app_id and not dispatcherConfig:
+            jsonMapper_obj = DispatcherConfig.objects.create(app_id=app_id, dhis2_host=dhis2_host,
+                                                             dhis2_port=dhis2_port, dhis2_username=dhis2_username,
+                                                             dhis2_password=dhis2_password)
+            jsonMapper_obj.save()
+    else:
+        print()
+        return ""
 
 
-    if app_id and dispatcherConfig:
-        DispatcherConfig.objects.filter().update(app_id=app_id, dhis2_host=dhis2_host, dhis2_port=dhis2_port, dhis2_username=dhis2_username, dhis2_password=dhis2_password)
-    elif app_id and not dispatcherConfig:
-        jsonMapper_obj = DispatcherConfig.objects.create(app_id=app_id, dhis2_host=dhis2_host, dhis2_port=dhis2_port, dhis2_username=dhis2_username, dhis2_password=dhis2_password)
-        jsonMapper_obj.save()
-
-
-def NotificationConfigInit():
+def notificationConfigInit():
     jsonData = NotificationConfigImpl().getAndRefreshNotificationConfig()
     notificationConfig = NotificationConfig.objects.filter()
     app_id = jsonData.get("AppID")
@@ -172,13 +191,15 @@ def NotificationConfigInit():
     password = jsonData.get("smtp_config").get("password")
 
     if app_id and notificationConfig:
-        NotificationConfig.objects.filter().update(app_id=app_id, admin_email=emails,  host=host, port=port, username=username, password=password)
+        NotificationConfig.objects.filter().update(app_id=app_id, admin_email=emails, host=host, port=port,
+                                                   username=username, password=password)
     elif app_id and not notificationConfig:
-        notificationConfig_obj = NotificationConfig.objects.create(app_id=app_id, admin_email=emails, host=host, port=port, username=username, password=password)
+        notificationConfig_obj = NotificationConfig.objects.create(app_id=app_id, admin_email=emails, host=host,
+                                                                   port=port, username=username, password=password)
         notificationConfig_obj.save()
 
 
-def MetadataUploadInit():
+def metadataUploadInit():
     jsonData = MetadataUploadAdminImpl().getAndRefreshMetadataUpload()
     metadataUpload = MetadataUpload.objects.filter()
     print(metadataUpload)
@@ -189,6 +210,7 @@ def MetadataUploadInit():
         MetadataUpload.objects.filter().delete()
         MetadataUpload().metadata_config_file.save('meta_data.json', ContentFile(jsonData))
 
+
 def get_admin_emails(jsonData):
     admin_emails = jsonData.get("admin_emails")
     emails = ''
@@ -198,6 +220,3 @@ def get_admin_emails(jsonData):
         else:
             emails = admin_email
     return emails
-
-
-

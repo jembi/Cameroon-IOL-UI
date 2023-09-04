@@ -24,7 +24,7 @@ ALLOWED_HOSTS = ['*']
 # adjust the minimal login
 LOGIN_URL = 'core_login'
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = 'core_login'
+LOGOUT_REDIRECT_URL = '/admin'
 
 
 # ##### DATABASE CONFIGURATION ############################

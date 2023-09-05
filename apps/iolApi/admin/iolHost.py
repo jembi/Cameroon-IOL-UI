@@ -12,6 +12,8 @@ env = environ.Env(
 admin.site.site_header = "Jembi IOL Admin Platform"
 admin.site.index_title = "Welcome to IOL "
 admin.site.site_title = "IOL "
+admin.site.site_url = "https://cmr-dev.jembi.org/openmrs"
+
 MAX_OBJECTS = 1
 
 
